@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 
-@Component("employeeExcelWriter")
+@Component("employeeItemWriter")
 @Scope("step")
-public class EmployeeExcelWriter implements ItemWriter<Employee> {
+public class EmployeeItemWriter implements ItemWriter<Employee> {
 
     private static final String FILE_NAME = "/data/excel/employee";
     private static final String[] HEADERS = {
