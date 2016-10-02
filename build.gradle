@@ -32,6 +32,8 @@ dependencies {
 	compile('org.projectlombok:lombok')
 	compile('org.springframework.boot:spring-boot-starter-integration')
 	compile('org.springframework.boot:spring-boot-starter-batch')
+	compile('org.apache.commons:commons-lang3:3.0')
+
 //	compile('org.springframework.data:spring-data-rest-hal-browser')
 //	compile('org.springframework.boot:spring-boot-starter-hateoas')
 //	compile('org.springframework.boot:spring-boot-starter-security')
