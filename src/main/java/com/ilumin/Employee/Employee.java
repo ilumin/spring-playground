@@ -12,18 +12,18 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "EmployeeID")
-    private Long employeeId;
+    public Long employeeId;
 
     @Column(name = "LastName")
-    private String lastName;
+    public String lastName;
 
     @Column(name = "FirstName")
-    private String firstName;
+    public String firstName;
 
     @Column(name = "Title")
-    private String title;
+    public String title;
 
     @Column(name = "TitleOfCourtesy")
-    private String titleOfCourtesy;
+    public String titleOfCourtesy;
 
 }
