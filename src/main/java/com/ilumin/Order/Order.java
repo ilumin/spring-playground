@@ -2,11 +2,9 @@ package com.ilumin.Order;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Calendar;
+import java.util.List;
 
 @Entity
 @Data
@@ -55,5 +53,8 @@ public class Order {
 
     @Column(name = "ShipCountry")
     public String shipCountry;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    public List<OrderDetail> orderDetails;
 
 }

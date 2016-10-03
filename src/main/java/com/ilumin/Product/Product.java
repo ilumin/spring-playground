@@ -1,9 +1,11 @@
 package com.ilumin.Product;
 
+import com.ilumin.Order.OrderDetail;
 import com.ilumin.Supplier.Supplier;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
@@ -35,8 +37,11 @@ public class Product {
     @Column(name = "Discontinued")
     public Character discontinued;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "SupplierID")
     public Supplier supplier;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    public List<OrderDetail> orderDetails;
 
 }
