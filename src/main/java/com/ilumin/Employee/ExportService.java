@@ -1,11 +1,14 @@
 package com.ilumin.Employee;
 
+import lombok.Getter;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,23 +18,37 @@ import java.util.List;
 @Service
 public class ExportService {
 
-    private static final String FILE_NAME = "/data/excel/employee";
+    private static final String FILE_NAME = "employee";
     private static final String[] HEADERS = {
             "EmployeeID", "LastName", "FirstName", "Title", "TitleOfCourtesy",
             "BirthDate", "HireDate", "Address", "City", "Region", "PostalCode",
             "Country", "HomePhone", "Extension", "Photo", "Notes"
     };
 
-    private String outputFilename;
+    @Getter
+    private String outputFileName;
+
+    private String outputFilePath;
     private Workbook workbook;
     private CellStyle cellStyle;
     private Integer currentRow = 0;
 
-    public void beforeStep() {
-        System.out.println(">> BEFORE STEP");
+    public void writeExcel(List<Employee> data) throws Exception {
+        beforeStep();
+        write(data);
+        saveFile();
+    }
 
+    public void downloadExcel(List<Employee> data, HttpServletResponse response) throws Exception {
+        beforeStep();
+        write(data);
+        downloadFile(response);
+    }
+
+    public void beforeStep() {
         String datetime = DateFormatUtils.format(Calendar.getInstance(), "yyyyMMdd-HHmmss");
-        outputFilename = FILE_NAME + "-" + datetime + ".xlsx";
+        outputFileName = FILE_NAME + "-" + datetime + ".xlsx";
+        outputFilePath = "/data/excel/" + outputFileName;
 
         workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Employee");
@@ -44,11 +61,19 @@ public class ExportService {
         initDataStyle();
     }
 
-    public void afterStep() throws IOException, URISyntaxException {
-        System.out.println(">> OUTPUT: " + outputFilename);
-        FileOutputStream fos = new FileOutputStream(outputFilename);
+    public void saveFile() throws IOException, URISyntaxException {
+        FileOutputStream fos = new FileOutputStream(outputFilePath);
         workbook.write(fos);
         fos.close();
+    }
+
+    public void downloadFile(HttpServletResponse response) throws IOException {
+        response.addHeader("Content-disposition", "attachment;filename=" + getOutputFileName());
+        response.setContentType("application/vnd.ms-excel");
+
+        ServletOutputStream outputStream = response.getOutputStream();
+        workbook.write(outputStream);
+        outputStream.flush();
     }
 
     public void write(List<? extends Employee> items) throws Exception {
@@ -143,11 +168,4 @@ public class ExportService {
         cell.setCellValue(value.toString());
         cell.setCellStyle(style);
     }
-
-    public void writeExcel(List<Employee> data) throws Exception {
-        beforeStep();
-        write(data);
-        afterStep();
-    }
-
 }

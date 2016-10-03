@@ -3,9 +3,14 @@ package com.ilumin.Employee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class EmployeeController {
@@ -17,12 +22,15 @@ public class EmployeeController {
     private ExportService exportService;
 
     @RequestMapping(value = "/employee/export", method = RequestMethod.GET)
-    public String exportEmployee() throws Exception {
+    @ResponseBody
+    public ResponseEntity<String> exportEmployee(HttpServletResponse response) throws Exception {
         int page = 0;
         int itemPerPage = 10;
         Pageable pageable = new PageRequest(page, itemPerPage);
-        exportService.writeExcel(employeeRepository.findAll(pageable).getContent());
-        return ">>> Yikes";
+
+        exportService.downloadExcel(employeeRepository.findAll(pageable).getContent(), response);
+
+        return new ResponseEntity<>("Download...", HttpStatus.OK);
     }
 
 }
