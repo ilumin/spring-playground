@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 public class EmployeeController {
@@ -24,13 +25,20 @@ public class EmployeeController {
     @RequestMapping(value = "/employee/export", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<String> exportEmployee(HttpServletResponse response) throws Exception {
+        exportService.downloadExcel(getEmployeeAll(), response);
+
+        return new ResponseEntity<>("Download...", HttpStatus.OK);
+    }
+
+    public List<Employee> getEmployeeFromPage() {
         int page = 0;
         int itemPerPage = 10;
         Pageable pageable = new PageRequest(page, itemPerPage);
+        return employeeRepository.findAll(pageable).getContent();
+    }
 
-        exportService.downloadExcel(employeeRepository.findAll(pageable).getContent(), response);
-
-        return new ResponseEntity<>("Download...", HttpStatus.OK);
+    public Iterable<Employee> getEmployeeAll() {
+        return employeeRepository.findAll();
     }
 
 }

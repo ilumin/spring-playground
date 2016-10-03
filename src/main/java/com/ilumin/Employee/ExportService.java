@@ -39,9 +39,9 @@ public class ExportService {
         saveFile();
     }
 
-    public void downloadExcel(List<Employee> data, HttpServletResponse response) throws Exception {
+    public void downloadExcel(Iterable<Employee> data, HttpServletResponse response) throws Exception {
         beforeStep();
-        write(data);
+        write((List<? extends Employee>) data);
         downloadFile(response);
     }
 
@@ -68,6 +68,9 @@ public class ExportService {
     }
 
     public void downloadFile(HttpServletResponse response) throws IOException {
+        System.out.println("DOWNLOAD excel: " + getOutputFileName());
+        System.out.println("with " + currentRow + " rows");
+
         response.addHeader("Content-disposition", "attachment;filename=" + getOutputFileName());
         response.setContentType("application/vnd.ms-excel");
 
