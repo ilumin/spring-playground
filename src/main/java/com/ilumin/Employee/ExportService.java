@@ -1,31 +1,25 @@
-package com.ilumin.Excel;
+package com.ilumin.Employee;
 
-import com.ilumin.Employee.Employee;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.annotation.AfterStep;
-import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
 
-@Component("employeeItemWriter")
-@Scope("step")
-public class EmployeeItemWriter implements ItemWriter<Employee> {
+@Service
+public class ExportService {
 
     private static final String FILE_NAME = "/data/excel/employee";
     private static final String[] HEADERS = {
-        "EmployeeID", "LastName", "FirstName", "Title", "TitleOfCourtesy",
-        "BirthDate", "HireDate", "Address", "City", "Region", "PostalCode",
-        "Country", "HomePhone", "Extension", "Photo", "Notes"
+            "EmployeeID", "LastName", "FirstName", "Title", "TitleOfCourtesy",
+            "BirthDate", "HireDate", "Address", "City", "Region", "PostalCode",
+            "Country", "HomePhone", "Extension", "Photo", "Notes"
     };
 
     private String outputFilename;
@@ -33,14 +27,13 @@ public class EmployeeItemWriter implements ItemWriter<Employee> {
     private CellStyle cellStyle;
     private Integer currentRow = 0;
 
-    @BeforeStep
-    public void beforeStep(StepExecution stepExecution) {
+    public void beforeStep() {
         System.out.println(">> BEFORE STEP");
 
         String datetime = DateFormatUtils.format(Calendar.getInstance(), "yyyyMMdd-HHmmss");
         outputFilename = FILE_NAME + "-" + datetime + ".xlsx";
 
-        workbook = new SXSSFWorkbook(100);
+        workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Employee");
         sheet.createFreezePane(0, 3, 0, 3);
         sheet.setDefaultColumnWidth(20);
@@ -51,14 +44,13 @@ public class EmployeeItemWriter implements ItemWriter<Employee> {
         initDataStyle();
     }
 
-    @AfterStep
-    public void afterStep(StepExecution stepExecution) throws IOException {
+    public void afterStep() throws IOException, URISyntaxException {
+        System.out.println(">> OUTPUT: " + outputFilename);
         FileOutputStream fos = new FileOutputStream(outputFilename);
         workbook.write(fos);
         fos.close();
     }
 
-    @Override
     public void write(List<? extends Employee> items) throws Exception {
         Sheet sheet = workbook.getSheetAt(0);
         for (Employee em: items) {
@@ -69,8 +61,8 @@ public class EmployeeItemWriter implements ItemWriter<Employee> {
             createCell(row, 2, em.getFirstName());
             createCell(row, 3, em.getTitle());
             createCell(row, 4, em.getTitleOfCourtesy());
-            createCell(row, 5, em.getBirthDate());
-            createCell(row, 6, em.getHireDate());
+            createCell(row, 5, em.getBirthDate().getTime());
+            createCell(row, 6, em.getHireDate().getTime());
             createCell(row, 7, em.getAddress());
             createCell(row, 8, em.getCity());
             createCell(row, 9, em.getRegion());
@@ -112,7 +104,7 @@ public class EmployeeItemWriter implements ItemWriter<Employee> {
         CellStyle style = wb.createCellStyle();
         Font font = wb.createFont();
 
-        font.setFontHeight((short) 10);
+        font.setFontHeightInPoints((short) 14);
         font.setFontName("Arial");
         font.setBold(true);
 
@@ -151,4 +143,11 @@ public class EmployeeItemWriter implements ItemWriter<Employee> {
         cell.setCellValue(value.toString());
         cell.setCellStyle(style);
     }
+
+    public void writeExcel(List<Employee> data) throws Exception {
+        beforeStep();
+        write(data);
+        afterStep();
+    }
+
 }
