@@ -33,7 +33,7 @@ public class OrderExportService {
     private CellStyle cellStyle;
     private Integer currentRow = 0;
 
-    public void downloadExcel(HttpServletResponse response, Iterable<OrderEntity> data) throws IOException {
+    public void downloadExcel(HttpServletResponse response, Iterable<Order> data) throws IOException {
         DateTime start, end;
         start = new DateTime();
 
@@ -71,8 +71,8 @@ public class OrderExportService {
         outputStream.flush();
     }
 
-    private void createSheetData(Sheet sheet, Iterable<OrderEntity> data) {
-        for (OrderEntity en: data) {
+    private void createSheetData(Sheet sheet, Iterable<Order> data) {
+        for (Order en: data) {
             Row row = sheet.createRow(currentRow++);
             createCell(row, 0, en.getOrderID().toString());
             createCell(row, 1, en.getCustomerID());
