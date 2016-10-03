@@ -1,7 +1,6 @@
 package com.ilumin.Order;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,20 +21,45 @@ import static org.apache.poi.ss.util.CellUtil.createCell;
 public class OrderExportService {
     private static final String FILE_NAME = "order";
     private static final String[] HEADERS = {
-            "OrderID", "CustomerID", "EmployeeID", "OrderDate", "RequiredDate",
-            "ShippedDate", "ShipVia", "Freight", "ShipName", "ShipAddress",
-            "ShipCity", "ShipRegion", "ShipPostalCode", "ShipCountry"
+            // order information
+            "OrderID",
+            "CustomerID",
+            "EmployeeID",
+            "OrderDate",
+            "RequiredDate",
+
+            // product information
+            "ProductID",
+            "ProductName",
+
+            // order detail information
+            "OrderDetailID",
+            "UnitPrice",
+            "Quantity",
+            "Discount",
+            "SubTotal",
+
+            // order shipment information
+            "ShippedDate",
+            "ShipVia",
+            "Freight",
+            "ShipName",
+            "ShipAddress",
+            "ShipCity",
+            "ShipRegion",
+            "ShipPostalCode",
+            "ShipCountry"
     };
 
     private String outputFileName;
-    private String outputFilePath;
     private Workbook workbook;
-    private CellStyle cellStyle;
     private Integer currentRow = 0;
 
     public void downloadExcel(HttpServletResponse response, Iterable<Order> data) throws IOException {
         DateTime start, end;
         start = new DateTime();
+
+        currentRow = 0;
 
         // defined filename
         String datetime = DateFormatUtils.format(Calendar.getInstance(), "yyyyMMdd-HHmmss");
@@ -72,26 +96,45 @@ public class OrderExportService {
     }
 
     private void createSheetData(Sheet sheet, Iterable<Order> data) {
+        // order
         for (Order en: data) {
-            Row row = sheet.createRow(currentRow++);
-            createCell(row, 0, en.getOrderID().toString());
-            createCell(row, 1, en.getCustomerID());
-            createCell(row, 2, en.getEmployeeID().toString());
-            createCell(row, 3, en.getOrderDate().getTime().toString());
-            createCell(row, 4, en.getRequiredDate().getTime().toString());
-            createCell(row, 5,
-                    Optional.ofNullable(en.getShippedDate()).isPresent()
-                    ? en.getShippedDate().getTime().toString()
-                    : ""
-            );
-            createCell(row, 6, en.getShipVia().toString());
-            createCell(row, 7, en.getFreight().toString());
-            createCell(row, 8, en.getShipName());
-            createCell(row, 9, en.getShipAddress());
-            createCell(row, 10, en.getShipCity());
-            createCell(row, 11, en.getShipRegion());
-            createCell(row, 12, en.getShipPostalCode());
-            createCell(row, 13, en.getShipCountry());
+            // order detail
+            for (OrderDetail item: en.getOrderDetails()) {
+                Row row = sheet.createRow(currentRow++);
+
+                // order information
+                createCell(row, 0, en.getOrderID().toString());
+                createCell(row, 1, en.getCustomerID());
+                createCell(row, 2, en.getEmployeeID().toString());
+                createCell(row, 3, en.getOrderDate().getTime().toString());
+                createCell(row, 4, en.getRequiredDate().getTime().toString());
+
+                // product information
+                createCell(row, 5, item.getProduct().getProductID().toString());
+                createCell(row, 6, item.getProduct().getProductName());
+
+                // order detail information
+                createCell(row, 7, item.getId().toString());
+                createCell(row, 8, item.getUnitPrice().toString());
+                createCell(row, 9, item.getQuantity().toString());
+                createCell(row, 10, item.getDiscount().toString());
+                createCell(row, 11, String.valueOf((item.getUnitPrice() * item.getQuantity() - item.getDiscount())));
+
+                // order shipment information
+                createCell(row, 12,
+                        Optional.ofNullable(en.getShippedDate()).isPresent()
+                                ? en.getShippedDate().getTime().toString()
+                                : ""
+                );
+                createCell(row, 13, en.getShipVia().toString());
+                createCell(row, 14, en.getFreight().toString());
+                createCell(row, 15, en.getShipName());
+                createCell(row, 16, en.getShipAddress());
+                createCell(row, 17, en.getShipCity());
+                createCell(row, 18, en.getShipRegion());
+                createCell(row, 19, en.getShipPostalCode());
+                createCell(row, 20, en.getShipCountry());
+            }
         }
     }
 
