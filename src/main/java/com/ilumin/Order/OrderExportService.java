@@ -75,7 +75,7 @@ public class OrderExportService {
         for (OrderEntity en: data) {
             Row row = sheet.createRow(currentRow++);
             createCell(row, 0, en.getOrderID().toString());
-            createCell(row, 1, en.getCustomerID().toString());
+            createCell(row, 1, en.getCustomerID());
             createCell(row, 2, en.getEmployeeID().toString());
             createCell(row, 3, en.getOrderDate().getTime().toString());
             createCell(row, 4, en.getRequiredDate().getTime().toString());
