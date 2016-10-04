@@ -1,5 +1,10 @@
 package com.ilumin.Order;
 
+import com.google.common.collect.Lists;
+import com.ilumin.OrderDetail.OrderDetail;
+import com.ilumin.OrderDetail.OrderDetailRepository;
+import com.ilumin.Product.Product;
+import com.ilumin.Product.ProductRepository;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -7,13 +12,15 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.apache.poi.ss.util.CellUtil.createCell;
 
@@ -55,6 +62,12 @@ public class OrderExportService {
     private Workbook workbook;
     private Integer currentRow = 0;
 
+    @Autowired
+    public OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    public ProductRepository productRepository;
+
     public void downloadExcel(HttpServletResponse response, Iterable<Order> data) throws IOException {
         DateTime start, end;
         start = new DateTime();
@@ -76,7 +89,7 @@ public class OrderExportService {
         // render excel data
         createSheetTitle(sheet);
         createSheetHeader(sheet);
-        createSheetData(sheet, data);
+        createSheetData(sheet, Lists.newArrayList(data));
 
         // process download
         processDownload(response);
@@ -95,47 +108,62 @@ public class OrderExportService {
         outputStream.flush();
     }
 
-    private void createSheetData(Sheet sheet, Iterable<Order> data) {
-        // order
-        for (Order en: data) {
-            // order detail
-            for (OrderDetail item: en.getOrderDetails()) {
-                Row row = sheet.createRow(currentRow++);
+    private void createSheetData(Sheet sheet, List<Order> data) {
+        // get collection of order id
+        Map<Long, Order> orderMap = data.stream().collect(Collectors.toMap(Order::getOrderId, Function.identity()));
 
-                // order information
-                createCell(row, 0, en.getOrderID().toString());
-                createCell(row, 1, en.getCustomerID());
-                createCell(row, 2, en.getEmployeeID().toString());
-                createCell(row, 3, en.getOrderDate().getTime().toString());
-                createCell(row, 4, en.getRequiredDate().getTime().toString());
+        // get collection of order detail
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdIn(orderMap.keySet());
+        Set<Long> setOfProductId = orderDetails.stream().map(OrderDetail::getProductId).collect(Collectors.toSet());
+        // and this should be map of order id with order detail
+        Map<Long, List<OrderDetail>> groupOfOrderDetail = orderDetails.stream().collect(Collectors.groupingBy(OrderDetail::getOrderId));
 
-                // product information
-                createCell(row, 5, item.getProduct().getProductID().toString());
-                createCell(row, 6, item.getProduct().getProductName());
+        // get collection of product
+        List<Product> products = productRepository.findByProductIdIn(setOfProductId);
+        Map<Long, String> mapOfProductName = products.stream().collect(Collectors.toMap(Product::getProductId, Product::getProductName));
 
-                // order detail information
-                createCell(row, 7, item.getId().toString());
-                createCell(row, 8, item.getUnitPrice().toString());
-                createCell(row, 9, item.getQuantity().toString());
-                createCell(row, 10, item.getDiscount().toString());
-                createCell(row, 11, String.valueOf((item.getUnitPrice() * item.getQuantity() - item.getDiscount())));
+        orderMap.forEach((orderId, order) ->
+                groupOfOrderDetail.getOrDefault(orderId, Lists.newArrayList()).forEach(orderDetail -> {
+                    // variable needed to get information
+                    Long productId = orderDetail.getProductId();
 
-                // order shipment information
-                createCell(row, 12,
-                        Optional.ofNullable(en.getShippedDate()).isPresent()
-                                ? en.getShippedDate().getTime().toString()
-                                : ""
-                );
-                createCell(row, 13, en.getShipVia().toString());
-                createCell(row, 14, en.getFreight().toString());
-                createCell(row, 15, en.getShipName());
-                createCell(row, 16, en.getShipAddress());
-                createCell(row, 17, en.getShipCity());
-                createCell(row, 18, en.getShipRegion());
-                createCell(row, 19, en.getShipPostalCode());
-                createCell(row, 20, en.getShipCountry());
-            }
-        }
+                    Row row = sheet.createRow(currentRow++);
+
+                    // order information
+                    createCell(row, 0, order.getOrderId().toString());
+                    createCell(row, 1, order.getCustomerId());
+                    createCell(row, 2, order.getEmployeeId().toString());
+                    createCell(row, 3, order.getOrderDate().getTime().toString());
+                    createCell(row, 4, order.getRequiredDate().getTime().toString());
+
+                    // product information
+                    createCell(row, 5, productId.toString());
+                    createCell(row, 6, mapOfProductName.getOrDefault(productId, "-"));
+
+                    // order detail information
+                    createCell(row, 7, orderDetail.getId().toString());
+                    createCell(row, 8, orderDetail.getUnitPrice().toString());
+                    createCell(row, 9, orderDetail.getQuantity().toString());
+                    createCell(row, 10, orderDetail.getDiscount().toString());
+                    createCell(row, 11, String.valueOf(
+                            (orderDetail.getUnitPrice() * orderDetail.getQuantity()) - orderDetail.getDiscount()
+                    ));
+
+                    // order shipment information
+                    createCell(row, 12,
+                            Optional.ofNullable(order.getShippedDate()).isPresent()
+                                    ? order.getShippedDate().getTime().toString()
+                                    : ""
+                    );
+                    createCell(row, 13, order.getShipVia().toString());
+                    createCell(row, 14, order.getFreight().toString());
+                    createCell(row, 15, order.getShipName());
+                    createCell(row, 16, order.getShipAddress());
+                    createCell(row, 17, order.getShipCity());
+                    createCell(row, 18, order.getShipRegion());
+                    createCell(row, 19, order.getShipPostalCode());
+                    createCell(row, 20, order.getShipCountry());
+                }));
     }
 
     private void createSheetHeader(Sheet sheet) {

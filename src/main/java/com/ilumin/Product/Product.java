@@ -1,11 +1,11 @@
 package com.ilumin.Product;
 
-import com.ilumin.Order.OrderDetail;
-import com.ilumin.Supplier.Supplier;
 import lombok.Data;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Data
@@ -14,7 +14,7 @@ public class Product {
 
     @Id
     @Column(name = "ProductID")
-    public Long productID;
+    public Long productId;
 
     @Column(name = "ProductName")
     public String productName;
@@ -37,11 +37,14 @@ public class Product {
     @Column(name = "Discontinued")
     public Character discontinued;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "SupplierID")
-    public Supplier supplier;
+    // @ManyToOne(cascade = CascadeType.ALL)
+    // @JoinColumn(name = "SupplierID")
+    // public Supplier supplier;
+    //
+    // @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    // public List<OrderDetail> orderDetails;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    public List<OrderDetail> orderDetails;
+    @Column(name = "SupplierID")
+    public Long supplierID;
 
 }

@@ -1,10 +1,11 @@
 package com.ilumin.Supplier;
 
-import com.ilumin.Product.Product;
 import lombok.Data;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Data
@@ -48,7 +49,7 @@ public class Supplier {
     @Column(name = "HomePage")
     public String homePage;
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
-    public List<Product> products;
+    // @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
+    // public List<Product> products;
 
 }

@@ -2,9 +2,11 @@ package com.ilumin.Order;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Calendar;
-import java.util.List;
 
 @Entity
 @Data
@@ -13,13 +15,13 @@ public class Order {
 
     @Id
     @Column(name = "OrderID")
-    public Long orderID;
+    public Long orderId;
 
     @Column(name = "CustomerID")
-    public String customerID;
+    public String customerId;
 
     @Column(name = "EmployeeID")
-    public Long employeeID;
+    public Long employeeId;
 
     @Column(name = "OrderDate")
     public Calendar orderDate;
@@ -54,7 +56,7 @@ public class Order {
     @Column(name = "ShipCountry")
     public String shipCountry;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    public List<OrderDetail> orderDetails;
+    // @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    // public List<OrderDetail> orderDetails;
 
 }
