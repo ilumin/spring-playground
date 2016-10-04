@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.Set;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
-    List<OrderDetail> findByOrderIdIn(Set<Long> orderIdCollection);
+    List<OrderDetail> findByOrderIdIn(List<Long> orderIdCollection);
 }
