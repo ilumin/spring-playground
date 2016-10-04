@@ -127,10 +127,40 @@ public class OrderExportService {
 
         Map<Long, String> mapOfProductName = products.stream().collect(Collectors.toMap(Product::getProductId, Product::getProductName));
 
-        orders.forEach(order->
-                groupOfOrderDetail.getOrDefault(order.getOrderId(), Lists.newArrayList()).forEach(orderDetail -> {
-                    writeRow(sheet, mapOfProductName, order, orderDetail);
-                }));
+        orders.forEach(order -> {
+            List<OrderDetail> listOfOrderDetail = groupOfOrderDetail.getOrDefault(order.getOrderId(), Lists.newArrayList());
+            if (listOfOrderDetail.size() > 0) {
+                listOfOrderDetail.forEach(orderDetail -> writeRow(sheet, mapOfProductName, order, orderDetail));
+            }
+            else {
+                writeOrderRow(sheet, order);
+            }
+        });
+    }
+
+    private void writeOrderRow(Sheet sheet, Order order) {
+        Row row = sheet.createRow(currentRow++);
+
+        createCell(row, 0, order.getOrderId().toString());
+        createCell(row, 1, order.getCustomerId());
+        createCell(row, 2, order.getEmployeeId().toString());
+        createCell(row, 3, order.getOrderDate().getTime().toString());
+        createCell(row, 4, order.getRequiredDate().getTime().toString());
+
+        // order shipment information
+        createCell(row, 12,
+                Optional.ofNullable(order.getShippedDate()).isPresent()
+                        ? order.getShippedDate().getTime().toString()
+                        : ""
+        );
+        createCell(row, 13, order.getShipVia().toString());
+        createCell(row, 14, order.getFreight().toString());
+        createCell(row, 15, order.getShipName());
+        createCell(row, 16, order.getShipAddress());
+        createCell(row, 17, order.getShipCity());
+        createCell(row, 18, order.getShipRegion());
+        createCell(row, 19, order.getShipPostalCode());
+        createCell(row, 20, order.getShipCountry());
     }
 
     private void writeRow(Sheet sheet, Map<Long, String> mapOfProductName, Order order, OrderDetail orderDetail) {
