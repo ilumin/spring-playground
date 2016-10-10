@@ -11,7 +11,7 @@ import java.util.Calendar;
 @Entity
 @Data
 @Table(name = "orders")
-public class Order {
+public class Orders {
 
     @Id
     @Column(name = "OrderID")

@@ -67,7 +67,7 @@ public class OrderExportService {
     @Autowired
     public ProductRepository productRepository;
 
-    public void downloadExcel(HttpServletResponse response, Iterable<Order> data) throws IOException {
+    public void downloadExcel(HttpServletResponse response, Iterable<Orders> data) throws IOException {
         DateTime start, end;
         start = new DateTime();
 
@@ -107,11 +107,11 @@ public class OrderExportService {
         outputStream.flush();
     }
 
-    private void createSheetData(Sheet sheet, List<Order> orders) {
-        System.out.println(">> Order.length = " + orders.size());
+    private void createSheetData(Sheet sheet, List<Orders> orderses) {
+        System.out.println(">> Orders.length = " + orderses.size());
 
         // get collection of order id
-        List<Long> listOfOrderId = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
+        List<Long> listOfOrderId = orderses.stream().map(Orders::getOrderId).collect(Collectors.toList());
 
         // get collection of order detail
         List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdIn(listOfOrderId);
@@ -127,7 +127,7 @@ public class OrderExportService {
 
         Map<Long, String> mapOfProductName = products.stream().collect(Collectors.toMap(Product::getProductId, Product::getProductName));
 
-        orders.forEach(order -> {
+        orderses.forEach(order -> {
             List<OrderDetail> listOfOrderDetail = groupOfOrderDetail.getOrDefault(order.getOrderId(), Lists.newArrayList());
             if (listOfOrderDetail.size() > 0) {
                 listOfOrderDetail.forEach(orderDetail -> writeRow(sheet, mapOfProductName, order, orderDetail));
@@ -138,49 +138,49 @@ public class OrderExportService {
         });
     }
 
-    private void writeOrderRow(Sheet sheet, Order order) {
+    private void writeOrderRow(Sheet sheet, Orders orders) {
         Row row = sheet.createRow(currentRow++);
 
-        createCell(row, 0, order.getOrderId().toString());
-        createCell(row, 1, order.getCustomerId());
-        createCell(row, 2, order.getEmployeeId().toString());
-        createCell(row, 3, order.getOrderDate().getTime().toString());
-        createCell(row, 4, order.getRequiredDate().getTime().toString());
+        createCell(row, 0, orders.getOrderId().toString());
+        createCell(row, 1, orders.getCustomerId());
+        createCell(row, 2, orders.getEmployeeId().toString());
+        createCell(row, 3, orders.getOrderDate().getTime().toString());
+        createCell(row, 4, orders.getRequiredDate().getTime().toString());
 
-        // order shipment information
+        // orders shipment information
         createCell(row, 12,
-                Optional.ofNullable(order.getShippedDate()).isPresent()
-                        ? order.getShippedDate().getTime().toString()
+                Optional.ofNullable(orders.getShippedDate()).isPresent()
+                        ? orders.getShippedDate().getTime().toString()
                         : ""
         );
-        createCell(row, 13, order.getShipVia().toString());
-        createCell(row, 14, order.getFreight().toString());
-        createCell(row, 15, order.getShipName());
-        createCell(row, 16, order.getShipAddress());
-        createCell(row, 17, order.getShipCity());
-        createCell(row, 18, order.getShipRegion());
-        createCell(row, 19, order.getShipPostalCode());
-        createCell(row, 20, order.getShipCountry());
+        createCell(row, 13, orders.getShipVia().toString());
+        createCell(row, 14, orders.getFreight().toString());
+        createCell(row, 15, orders.getShipName());
+        createCell(row, 16, orders.getShipAddress());
+        createCell(row, 17, orders.getShipCity());
+        createCell(row, 18, orders.getShipRegion());
+        createCell(row, 19, orders.getShipPostalCode());
+        createCell(row, 20, orders.getShipCountry());
     }
 
-    private void writeRow(Sheet sheet, Map<Long, String> mapOfProductName, Order order, OrderDetail orderDetail) {
+    private void writeRow(Sheet sheet, Map<Long, String> mapOfProductName, Orders orders, OrderDetail orderDetail) {
         // variable needed to get information
         Long productId = orderDetail.getProductId();
 
         Row row = sheet.createRow(currentRow++);
 
-        // order information
-        createCell(row, 0, order.getOrderId().toString());
-        createCell(row, 1, order.getCustomerId());
-        createCell(row, 2, order.getEmployeeId().toString());
-        createCell(row, 3, order.getOrderDate().getTime().toString());
-        createCell(row, 4, order.getRequiredDate().getTime().toString());
+        // orders information
+        createCell(row, 0, orders.getOrderId().toString());
+        createCell(row, 1, orders.getCustomerId());
+        createCell(row, 2, orders.getEmployeeId().toString());
+        createCell(row, 3, orders.getOrderDate().getTime().toString());
+        createCell(row, 4, orders.getRequiredDate().getTime().toString());
 
         // product information
         createCell(row, 5, productId.toString());
         createCell(row, 6, mapOfProductName.getOrDefault(productId, "-"));
 
-        // order detail information
+        // orders detail information
         createCell(row, 7, orderDetail.getId().toString());
         createCell(row, 8, orderDetail.getUnitPrice().toString());
         createCell(row, 9, orderDetail.getQuantity().toString());
@@ -189,20 +189,20 @@ public class OrderExportService {
                 (orderDetail.getUnitPrice() * orderDetail.getQuantity()) - orderDetail.getDiscount()
         ));
 
-        // order shipment information
+        // orders shipment information
         createCell(row, 12,
-                Optional.ofNullable(order.getShippedDate()).isPresent()
-                        ? order.getShippedDate().getTime().toString()
+                Optional.ofNullable(orders.getShippedDate()).isPresent()
+                        ? orders.getShippedDate().getTime().toString()
                         : ""
         );
-        createCell(row, 13, order.getShipVia().toString());
-        createCell(row, 14, order.getFreight().toString());
-        createCell(row, 15, order.getShipName());
-        createCell(row, 16, order.getShipAddress());
-        createCell(row, 17, order.getShipCity());
-        createCell(row, 18, order.getShipRegion());
-        createCell(row, 19, order.getShipPostalCode());
-        createCell(row, 20, order.getShipCountry());
+        createCell(row, 13, orders.getShipVia().toString());
+        createCell(row, 14, orders.getFreight().toString());
+        createCell(row, 15, orders.getShipName());
+        createCell(row, 16, orders.getShipAddress());
+        createCell(row, 17, orders.getShipCity());
+        createCell(row, 18, orders.getShipRegion());
+        createCell(row, 19, orders.getShipPostalCode());
+        createCell(row, 20, orders.getShipCountry());
     }
 
     private void createSheetHeader(Sheet sheet) {
@@ -217,7 +217,7 @@ public class OrderExportService {
         Row row = sheet.createRow(currentRow++);
         row.setHeightInPoints(14);
         String currentDate = DateFormatUtils.format(Calendar.getInstance(), DateFormatUtils.ISO_DATETIME_FORMAT.getPattern());
-        createCell(row, 0, "Order data exported on " + currentDate);
+        createCell(row, 0, "Orders data exported on " + currentDate);
     }
 
 }

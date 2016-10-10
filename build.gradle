@@ -3,7 +3,8 @@ buildscript {
 		springBootVersion = '1.4.1.RELEASE'
 	}
 	repositories {
-		mavenCentral()
+        jcenter()
+		// mavenCentral()
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -22,7 +23,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-	mavenCentral()
+    jcenter()
+	// mavenCentral()
 }
 
 

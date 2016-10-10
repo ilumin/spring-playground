@@ -27,7 +27,7 @@ public class OrderDetail {
 
     // @ManyToOne(cascade = CascadeType.ALL)
     // @JoinColumn(name = "OrderID")
-    // public Order order;
+    // public Orders order;
     //
     // @ManyToOne(cascade = CascadeType.ALL)
     // @JoinColumn(name = "ProductID")
